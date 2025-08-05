@@ -102,6 +102,9 @@ const OrderDetails = () => {
                   <p className='font-bold text-2xl'>
                     Type : <span className='font-normal italic'>{selectedProduct?.product_type}</span>
                   </p>
+                  <p className='font-bold text-2xl'>
+                    Description : <span className='font-normal italic'>{selectedProduct?.product_description}</span>
+                  </p>
                 </div>
               </div>
             </div>

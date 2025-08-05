@@ -1,170 +1,3 @@
-// import React, { useState } from 'react';
-// import { useAddProductMutation } from '../redux/productsApi';
-
-// const AddProduct = () => {
-//   const [category, setCategory] = useState('');
-//   const [gender, setGender] = useState('Men');
-//   const [categoryImage, setCategoryImage] = useState(null);
-
-//   const [products, setProducts] = useState([
-//     { product_type: '', product_name: '', product_price: '', images: [] },
-//   ]);
-
-//   const [addProduct] = useAddProductMutation();
-
-//   const handleProductChange = (index, field, value) => {
-//     const updated = [...products];
-//     updated[index][field] = value;
-//     setProducts(updated);
-//   };
-
-//  const handleImageChange = (index, fileList) => {
-//   const files = Array.from(fileList);
-//   const updated = [...products];
-//   updated[index].images = files;
-//   setProducts(updated);
-// };
-
-//   const handleAddProduct = () => {
-//     setProducts([...products, { product_type: '', product_name: '', product_price: '', images: [] }]);
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     const formData = new FormData();
-//     formData.append('product_catagory', category);
-//     formData.append('gender', gender);
-//     formData.append('product_catagory_image', categoryImage);
-
-//     const productArray = products.map(({ product_type, product_name, product_price }) => ({
-//       product_type,
-//       product_name,
-//       product_price: Number(product_price),
-//     }));
-
-//     formData.append('product_array', JSON.stringify(productArray));
-
-
-//     products.forEach((prod, index) => {
-//       [...prod.images].forEach((file) => {
-//         formData.append(`product_images[${index}]`, file);
-//       });
-//     });
-
-//     try {
-//       const res = await addProduct(formData).unwrap();
-//       alert('Product added successfully!');
-//       console.log(res);
-//     } catch (error) {
-//       console.error('Add failed:', error);
-//       alert('Failed to add product');
-//     }
-//   };
-
-//   return (
-//     <div className="p-6">
-//       <h2 className="text-2xl font-semibold mb-4">Add Product</h2>
-//       <form onSubmit={handleSubmit} className="space-y-6">
-
-
-//         <div>
-//           <label className="block font-medium">Category Name</label>
-//           <input
-//             type="text"
-//             value={category}
-//             onChange={(e) => setCategory(e.target.value)}
-//             className="w-full border p-2 rounded"
-//             required
-//           />
-//         </div>
-
-//         <div>
-//           <label className="block font-medium">Gender</label>
-//           <select
-//             value={gender}
-//             onChange={(e) => setGender(e.target.value)}
-//             className="w-full border p-2 rounded"
-//           >
-//             <option>Men</option>
-//             <option>Women</option>
-//             <option>Unisex</option>
-//           </select>
-//         </div>
-
-//         <div>
-//           <label className="block font-medium">Category Image</label>
-//           <input
-//             type="file"
-//             accept="image/*"
-//             onChange={(e) => setCategoryImage(e.target.files[0])}
-//             className="w-full"
-//             required
-//           />
-//         </div>
-
-
-//         {products.map((product, idx) => (
-//           <div key={idx} className="border p-4 rounded space-y-3 bg-gray-100">
-//             <h4 className="font-semibold">Product {idx + 1}</h4>
-
-//             <input
-//               type="text"
-//               placeholder="Product Type"
-//               value={product.product_type}
-//               onChange={(e) => handleProductChange(idx, 'product_type', e.target.value)}
-//               className="w-full border p-2 rounded"
-//               required
-//             />
-
-//             <input
-//               type="text"
-//               placeholder="Product Name"
-//               value={product.product_name}
-//               onChange={(e) => handleProductChange(idx, 'product_name', e.target.value)}
-//               className="w-full border p-2 rounded"
-//               required
-//             />
-
-//             <input
-//               type="number"
-//               placeholder="Product Price"
-//               value={product.product_price}
-//               onChange={(e) => handleProductChange(idx, 'product_price', e.target.value)}
-//               className="w-full border p-2 rounded"
-//               required
-//             />
-
-//             <input
-//               type="file"
-//               multiple
-//               accept="image/*"
-//               onChange={(e) => handleImageChange(idx, e.target.files)}
-//               className="w-full"
-//               required
-//             />
-//           </div>
-//         ))}
-
-//         <button
-//           type="button"
-//           onClick={handleAddProduct}
-//           className="bg-blue-600 text-white px-4 py-2 rounded"
-//         >
-//           + Add More Product Type
-//         </button>
-
-//         <div>
-//           <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded">
-//             Submit
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default AddProduct;
 
 
 
@@ -181,7 +14,7 @@ const AddProduct = () => {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([
-    { product_type: '', product_name: '', product_price: '', product_description: '', images: [] },
+    { product_type: '', product_name: '', product_price: '', product_description: '', product_fabric: '', images: [] },
   ]);
 
   const [addProduct] = useAddProductMutation();
@@ -200,7 +33,7 @@ const AddProduct = () => {
   };
 
   const handleAddProduct = () => {
-    setProducts([...products, { product_type: '', product_name: '', product_price: '', images: [] }]);
+    setProducts([...products, { product_type: '', product_name: '', product_price: '', product_fabric: '', images: [] }]);
   };
 
   const handleSubmit = async (e) => {
@@ -211,11 +44,12 @@ const AddProduct = () => {
     formData.append('gender', gender);
     formData.append('product_catagory_image', categoryImage);
 
-    const productArray = products.map(({ product_type, product_name, product_price, product_description}) => ({
+    const productArray = products.map(({ product_type, product_name, product_price, product_fabric, product_description }) => ({
       product_type,
       product_name,
       product_price: Number(product_price),
       product_description,
+      product_fabric,
     }));
 
     formData.append('product_array', JSON.stringify(productArray));
@@ -330,7 +164,16 @@ const AddProduct = () => {
                   placeholder='Add Description'
                   value={product.product_description}
                   onChange={(e) => handleProductChange(idx, 'product_description', e.target.value)}
-                  className="w-full text-sm mt-2"
+                  className="w-full text-sm mt-2 p-4 rounded-md border border-gray-300"
+                  required
+                />
+
+                <input
+                  type="text"
+                  placeholder="Product Fabric"
+                  value={product.product_fabric}
+                  onChange={(e) => handleProductChange(idx, 'product_fabric', e.target.value)}
+                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
