@@ -198,6 +198,7 @@ import {
   useDeleteCoupenMutation,
 } from '../redux/coupensApi';
 import { toast } from 'react-toastify';
+import Loader from '../components/Loader';
 
 const Coupens = () => {
   const { data = [], isLoading, refetch } = useGetAllCoupensQuery();
@@ -273,7 +274,7 @@ const Coupens = () => {
     }
   };
 
-  if (isLoading) return <div className="text-white p-6">Loading...</div>;
+  if (isLoading) return <div className="text-black p-6"><Loader/></div>;
 
   return (
     <div className="min-h-screen text-white p-6">

@@ -17,7 +17,8 @@ const AddProduct = () => {
     { product_type: '', product_name: '', product_price: '', product_description: '', product_fabric: '', images: [] },
   ]);
 
-  const [addProduct] = useAddProductMutation();
+  // Destructure mutation and loading state correctly
+  const [addProduct, { isLoading }] = useAddProductMutation();
 
   const handleProductChange = (index, field, value) => {
     const updated = [...products];
@@ -193,8 +194,9 @@ const AddProduct = () => {
           <button
             type="submit"
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded transition duration-200"
+            disabled={isLoading}
           >
-            Submit
+            {isLoading ? "Submitting" : "Submit"}
           </button>
         </div>
       </form>

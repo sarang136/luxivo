@@ -132,7 +132,7 @@ const Categories = () => {
   if (!allCategories.length) {
     return <div className="text-center mt-10 text-gray-600 text-xl">No Products Found</div>;
   }
-
+// console.log(selectedProducts)
   return (
     <div className="flex flex-col p-4 md:p-6 h-full">
       <div className="mb-4">
@@ -158,14 +158,14 @@ const Categories = () => {
             {selectedProducts.map((product, index) => (
               <div
                 key={product._id + index}
-                className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition relative"
+                className="bg-white border flex flex-col justify-between border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition relative"
               >
                 <img
-                  src={product.catImage}
+                  src={product.product_images[0]}
                   alt="Product"
                   className="w-full h-40 object-cover rounded-lg"
                 />
-                <h3 className="font-semibold mt-3 text-base">{product.product_name}</h3>
+                <h3 className="font-semibold mt-3 text-base truncate">{product.product_name}</h3>
                 <p className="text-sm text-gray-500">{product.category}</p>
                 <p className="text-lg font-bold text-blue-600 mt-1">₹{product.product_price}</p>
                 <p>Fabric : {product.product_fabric}</p>

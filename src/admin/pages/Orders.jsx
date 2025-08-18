@@ -35,7 +35,7 @@ const Orders = () => {
 
   return (
     <div className="p-4">
-      <div className="overflow-x-auto rounded-xl shadow border bg-gray-50">
+      <div className="overflow-x-auto max-h-[80vh] rounded-xl shadow border bg-gray-50">
         <table className="min-w-full text-sm text-left border cursor-pointer">
           <thead className="bg-[#e0e0e0] text-gray-900 text-lg">
             <tr>
