@@ -53,6 +53,7 @@ const OrderDetails = () => {
         ))}
       </div>
 
+{/*  */}
       {modal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center">
           <div className="bg-white rounded-lg shadow-lg p-8 w-[70vw] h-[70vh] relative overflow-y-auto">
