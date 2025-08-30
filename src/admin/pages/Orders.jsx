@@ -1,94 +1,4 @@
-// import React, { useEffect, useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { useGetAllOrdersQuery } from '../redux/ordersApi';
-// import { BiLoader, BiLoaderAlt } from 'react-icons/bi';
-// import Loader from '../components/Loader';
 
-// const Orders = () => {
-//   const [prod, setProd] = useState();
-//   const { data, isLoading, error } = useGetAllOrdersQuery();
-//   const navigate = useNavigate();
-
-//   const handleViewClick = (order) => {
-//     navigate('/orders/product-details', { state: { order } });
-//   };
-
-
-//   const getFirstProductImage = (order) => {
-//     for (let prod of order.products || []) {
-//       const productArray = prod?.productId?.product_array || [];
-//       for (let item of productArray) {
-//         if (item?.product_images?.[0]) return item.product_images[0];
-//       }
-//     }
-//     return null;
-//   };
-
-//   if (!data) {
-//     return <div><Loader /></div>;
-//   }
-  
-//   if (Array.isArray(data.data) && data.data.length === 0) {
-//     return <div className="text-center mt-10 text-gray-600 text-xl">No Orders Found</div>;
-//   }
-
-
-//   return (
-//     <div className="p-4">
-//       <div className="overflow-x-auto max-h-[80vh] rounded-xl shadow border bg-gray-50">
-//         <table className="min-w-full text-sm text-left border cursor-pointer">
-//           <thead className="bg-[#e0e0e0] text-gray-900 text-lg">
-//             <tr>
-//               <th className="px-4 py-4 border rounded-tl-xl">#</th>
-//               <th className="px-4 py-4 border">Email</th>
-//               <th className="px-4 py-4 border">Status</th>
-//               <th className="px-4 py-4 border">Product</th>
-//               <th className="px-4 py-4 border rounded-tr-xl">Action</th>
-//             </tr>
-//           </thead>
-//           <tbody className="text-base">
-//             {isLoading ? (
-//               <tr>
-//                 <td colSpan="5" className="text-center py-6 text-gray-500">
-//                   Loading Orders...
-//                 </td>
-//               </tr>
-//             ) : (
-//               data?.data?.map((order, index) => (
-//                 <tr key={order._id} className="hover:bg-gray-100 transition">
-//                   <td className="px-4 py-3 border">{index + 1}</td>
-//                   <td className="px-4 py-3 border">{order?.userId?.email}</td>
-//                   <td className="px-4 py-3 border capitalize">{order.status}</td>
-
-//                   <td className="px-4 py-3 border">
-//                     {
-//                       order?.products.map((product) => (
-//                         <div>
-//                           {product?.productId ? <img src={product?.productId?.product_catagory_image}  alt='' /> : "NA"}
-//                         </div>
-//                       ))
-//                     }
-//                   </td>
-
-//                   <td className="px-4 py-3 border">
-//                     <button
-//                       onClick={() => handleViewClick(order)}
-//                       className="text-blue-700 underline"
-//                     >
-//                       View
-//                     </button>
-//                   </td>
-//                 </tr>
-//               ))
-//             )}
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Orders;
 
 
 
@@ -261,7 +171,6 @@
 
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGetAllOrdersQuery } from "../redux/ordersApi";
 import Loader from "../components/Loader";
 import DatePicker from "react-datepicker";
@@ -270,15 +179,19 @@ import { FaFilter } from "react-icons/fa";
 
 const Orders = () => {
   const { data, isLoading, error } = useGetAllOrdersQuery();
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
+  // 🔹 Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null); // store clicked order
+
   const ordersPerPage = 10;
 
   const handleViewClick = (order) => {
-    navigate("/orders/product-details", { state: { order } });
+    setSelectedOrder(order); // save clicked order
+    setIsModalOpen(true); // open modal
   };
 
   if (isLoading) {
@@ -295,7 +208,7 @@ const Orders = () => {
     );
   }
 
-  if (Array.isArray(data?.data) && data.data.length === 0) {
+  if (Array.isArray(data?.data) && data?.data?.length === 0) {
     return (
       <div className="text-center mt-10 text-gray-600 text-xl">
         No Orders Found
@@ -303,22 +216,20 @@ const Orders = () => {
     );
   }
 
-  // Reverse orders for latest first
-  let reversedOrders = data?.data?.slice().reverse() || [];
+  let reversedOrders = data?.data?.slice()?.reverse() || [];
 
-  // ✅ Apply Date Filter if selected
   if (selectedDate) {
-    reversedOrders = reversedOrders.filter((order) => {
-      const orderDate = new Date(order.createdAt).toDateString();
-      const selected = new Date(selectedDate).toDateString();
+    reversedOrders = reversedOrders?.filter((order) => {
+      const orderDate = new Date(order?.createdAt)?.toDateString();
+      const selected = new Date(selectedDate)?.toDateString();
       return orderDate === selected;
     });
   }
 
-  const totalPages = Math.ceil(reversedOrders.length / ordersPerPage);
+  const totalPages = Math.ceil((reversedOrders?.length || 0) / ordersPerPage);
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = reversedOrders.slice(
+  const currentOrders = reversedOrders?.slice(
     indexOfFirstOrder,
     indexOfLastOrder
   );
@@ -338,7 +249,6 @@ const Orders = () => {
             <span>Filter by Date</span>
           </button>
 
-          {/* ✅ Remove All Filters */}
           {selectedDate && (
             <button
               onClick={() => {
@@ -353,7 +263,7 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* 🔹 Calendar Modal */}
+      {/* Calendar Popup */}
       {showCalendar && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -392,6 +302,7 @@ const Orders = () => {
             <tr>
               <th className="px-4 py-4 border rounded-tl-xl">#</th>
               <th className="px-4 py-4 border">Email</th>
+              <th className="px-4 py-4 border">Address</th>
               <th className="px-4 py-4 border">Status</th>
               <th className="px-4 py-4 border">Product</th>
               <th className="px-4 py-4 border">Date</th>
@@ -399,9 +310,9 @@ const Orders = () => {
             </tr>
           </thead>
           <tbody className="text-base">
-            {currentOrders.map((order, index) => (
+            {currentOrders?.map((order, index) => (
               <tr
-                key={order._id || index}
+                key={order?._id || index}
                 className="hover:bg-gray-100 transition"
               >
                 <td className="px-4 py-3 border">
@@ -410,16 +321,19 @@ const Orders = () => {
                 <td className="px-4 py-3 border">
                   {order?.userId?.email || "N/A"}
                 </td>
+                <td className="px-4 py-3 border">
+                  {order?.Address?.areaOrLocality || "N/A"}
+                </td>
                 <td className="px-4 py-3 border capitalize">
                   {order?.status || "Pending"}
                 </td>
                 <td className="px-4 py-3 border space-y-2">
                   {order?.products?.length > 0 ? (
-                    order.products.map((product, i) => (
+                    order?.products?.map((product, i) => (
                       <div key={i} className="flex items-center gap-2">
                         {product?.productId?.product_catagory_image ? (
                           <img
-                            src={product.productId.product_catagory_image}
+                            src={product?.productId?.product_catagory_image}
                             alt="Product"
                             className="w-10 h-10 rounded border"
                           />
@@ -435,7 +349,9 @@ const Orders = () => {
 
                 {/* ✅ Show Order Date */}
                 <td className="px-4 py-3 border">
-                  {new Date(order.createdAt).toLocaleDateString()}
+                  {order?.createdAt
+                    ? new Date(order?.createdAt)?.toLocaleDateString()
+                    : "N/A"}
                 </td>
 
                 <td className="px-4 py-3 border">
@@ -466,7 +382,7 @@ const Orders = () => {
           Prev
         </button>
 
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1)?.map((page) => (
           <button
             key={page}
             onClick={() => setCurrentPage(page)}
@@ -492,11 +408,65 @@ const Orders = () => {
           Next
         </button>
       </div>
+
+      {/* 🔹 Modal */}
+      {isModalOpen && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+
+            {/* 🔹 Total Items */}
+            <div className="flex justify-between items-center border-b pb-2 mb-4">
+              <span className="font-medium">Total Items</span>
+              <span>{selectedOrder?.products?.length || 0}</span>
+            </div>
+
+            {/* 🔹 First Product */}
+            {selectedOrder?.products?.length > 0 && (
+              <div className="flex items-start gap-4 mb-4">
+                <img
+                  src={
+                    selectedOrder?.products?.[0]?.productData?.product_images?.[0]
+                  }
+                  alt={selectedOrder?.products?.[0]?.productData?.product_name || "Product"}
+                  className="w-20 h-20 object-cover rounded border"
+                />
+
+                <div className="flex-1">
+                  <h3 className="font-medium text-base">
+                    {selectedOrder?.products?.[0]?.productData?.product_name || "Unnamed"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Size: {selectedOrder?.products?.[0]?.Size || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Qty: {selectedOrder?.products?.[0]?.quantity || 0}
+                  </p>
+                  <p className="text-sm font-semibold mt-1">
+                    Rs.{selectedOrder?.products?.[0]?.productData?.product_price || 0}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Close Button */}
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Orders;
+
 
 
 
