@@ -36,7 +36,6 @@ const AppRoutes = () => {
         <Route path="add-banner" element={<AddBanner />} />
         <Route path="total-users" element={<TotalUsers />} />
         <Route path="total-products" element={<TotalProducts />} />
-        <Route path="transactions" element={<TotalProducts />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/orders/product-details" element={<OrderDetails/>} />
         <Route path="/category-images" element={<CategoryImages/>} />

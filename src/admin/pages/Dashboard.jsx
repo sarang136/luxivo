@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MdPayments, MdPerson, MdShoppingBag } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { useGetProductsQuery } from '../redux/productsApi.js';
 import { useGetAllUsersQuery } from '../redux/productsApi.js';
 import Loader from '../components/Loader';
+import axios from 'axios';
+import CountUp from 'react-countup';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [transactions, setTransactions] = useState([]);
+  useEffect(() => {
+    const getTranctions = async () => {
+      const response = await axios.get('https://shirt-backend-f43b.onrender.com/api/transaction/getTransaction');
+      console.log(response)
+      setTransactions(response.data);
+      // return transactions;
+    }
+    getTranctions();
+  }, []);
+  console.log(transactions);
+
+  const totalRevenue = transactions.reduce((acc, tx) => acc + tx.amount, 0);
+  console.log(totalRevenue);
+
   const { data: productData, isLoading: loadingProducts } = useGetProductsQuery();
   console.log(productData)
   const { data: userData, isLoading: loadingUsers } = useGetAllUsersQuery();
@@ -31,7 +48,7 @@ const Dashboard = () => {
           </div>
           <div>
             <div className="text-2xl font-bold">
-              {loadingUsers ? 'Loading...': totalUsersCount}
+              {loadingUsers ? 'Loading...' : totalUsersCount}
             </div>
             <h2 className="text-sm text-gray-600">Total Users</h2>
           </div>
@@ -62,7 +79,9 @@ const Dashboard = () => {
             <MdPayments size={28} />
           </div>
           <div>
-            <p className="text-2xl font-bold">Rs.10,000</p>
+            <p className="text-2xl font-bold">
+              Rs.<CountUp end={totalRevenue} duration={2} separator="," />
+            </p>
             <h2 className="text-sm text-gray-600">Transaction</h2>
           </div>
         </div>
