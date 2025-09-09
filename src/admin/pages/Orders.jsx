@@ -283,10 +283,9 @@ const Orders = () => {
                       <p className="text-sm text-gray-600">
                         Size: {product?.Size || "N/A"}
                       </p>
-                      {/* If you want to show quantity, uncomment below */}
-                      {/* <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600">
                         Qty: {product?.quantity || 0}
-                      </p> */}
+                      </p>
                       <p className="text-sm font-semibold mt-1">
                         Rs.{product?.productData?.product_price || 0}
                       </p>
