@@ -13,7 +13,7 @@ const Orders = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  // Modal state
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -23,9 +23,9 @@ const Orders = () => {
     const getTransactions = async () => {
       try {
         const response = await axios.get(
-          'https://shirt-backend-f43b.onrender.com/api/transaction/getTransaction'
+          'https://shirt-backend-11fx.onrender.com/api/payment/getTransaction'
         );
-        // The response is an array of orders, each with userId and products (order details)
+
         const txData = Array.isArray(response.data)
           ? response.data
           : Array.isArray(response.data?.data)
