@@ -14,9 +14,9 @@ const UserManagement = () => {
 
   return (
     <div className="p-4">
-      <div className="overflow-x-auto rounded-xl  rounded shadow">
+      <div className="overflow-x-auto rounded-xl rounded shadow max-h-[80vh]">
         <table className="min-w-full text-sm text-left border cursor-pointer">
-          <thead className="bg-gray-400 text-white text-xl ">
+          <thead className="bg-gray-400 text-white text-xl">
             <tr className=''>
               <th className="px-4 py-4 border rounded-tl-xl">#</th>
               <th className="px-4 py-4 border">Name</th>

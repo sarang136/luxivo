@@ -11,6 +11,9 @@ const Categories = () => {
   const { data, isLoading, refetch } = useGetProductsQuery();
   const [updateProduct, { isLoading: loadingForEdit }] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
+  const [loading, setLoading] = useState(false);
+  const [available, setAvailable] = useState(null);
+
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -110,16 +113,50 @@ const Categories = () => {
   }
 
   const handleAvailability = async (productId) => {
-    console.log("Button Clicked")
-    await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`, { available: true }, { withCredentials: true })
-  }
+    try {
+      setLoading(true);
+      console.log("Making available...");
+      const res = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`,
+        { available: true },
+        { withCredentials: true }
+      );
+      setAvailable(true);
+      console.log("Response:", res.data);
+     await refetch();
+    } catch (error) {
+      console.error("Error updating availability:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUnAvailability = async (productId) => {
-    console.log("Button Clicked")
-    await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`, { available: false }, { withCredentials: true })
-  }
+    try {
+      setLoading(true);
+      console.log("Making unavailable...");
+      const res = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`,
+        { available: false },
+        { withCredentials: true }
+      );
+      setAvailable(false);
+      console.log("Response:", res.data);
+      await refetch();
+    } catch (error) {
+      console.error("Error updating availability:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex h-full">
+      {loading && ( 
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       <div className="w-1/4 border-r border-gray-200 p-4 overflow-y-auto max-h-[80vh]">
         <h2 className="font-bold text-lg mb-3">Categories</h2>
         <div className="flex flex-col gap-2">
@@ -141,85 +178,84 @@ const Categories = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {selectedProducts.map((product, index) => (
               <div
-  key={product._id + index}
-  className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-5"
->
-  {/* Product Image */}
-  <img
-    src={product.product_images[0]}
-    alt={product.product_name}
-    className="w-full h-44 object-cover rounded-lg mb-4"
-  />
+                key={product._id + index}
+                className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-5"
+              >
+                {/* Product Image */}
+                <img
+                  src={product.product_images[0]}
+                  alt={product.product_name}
+                  className="w-full h-44 object-cover rounded-lg mb-4"
+                />
 
-  {/* Product Info */}
-  <div className="flex flex-col gap-1">
-    <h3 className="font-semibold text-base text-gray-800 truncate">
-      {product.product_name}
-    </h3>
-    <p className="text-sm text-gray-500">{selectedCategory.product_catagory}</p>
-    <p className="text-lg font-bold text-blue-600">₹{product.product_price}</p>
-    <p className="text-sm text-gray-600">Fabric: {product.product_fabric}</p>
-  </div>
+                {/* Product Info */}
+                <div className="flex flex-col gap-1">
+                  <h3 className="font-semibold text-base text-gray-800 truncate">
+                    {product.product_name}
+                  </h3>
+                  <p className="text-sm text-gray-500">{selectedCategory.product_catagory}</p>
+                  <p className="text-lg font-bold text-blue-600">₹{product.product_price}</p>
+                  <p className="text-sm text-gray-600">Fabric: {product.product_fabric}</p>
+                </div>
 
-  {/* Buttons */}
-  <div className="flex items-center gap-2 mt-4">
-    <button
-      className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-      onClick={() =>
-        navigate(`/product/${product._id}`, { state: { product } })
-      }
-    >
-      View
-    </button>
-    <button
-      className="p-2 rounded-lg hover:bg-gray-100 transition"
-      onClick={() => handleEditClick(product)}
-    >
-      <MdEdit size={22} className="text-gray-600 hover:text-black" />
-    </button>
-    <button
-      className="p-2 rounded-lg hover:bg-gray-100 transition"
-      onClick={() => handleDelete(selectedCategory._id, product._id)}
-    >
-      <MdDelete size={22} className="text-gray-600 hover:text-black" />
-    </button>
-  </div>
+                {/* Buttons */}
+                <div className="flex items-center gap-2 mt-4">
+                  <button
+                    className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                    onClick={() =>
+                      navigate(`/product/${product._id}`, { state: { product } })
+                    }
+                  >
+                    View
+                  </button>
+                  <button
+                    className="p-2 rounded-lg hover:bg-gray-100 transition"
+                    onClick={() => handleEditClick(product)}
+                  >
+                    <MdEdit size={22} className="text-gray-600 hover:text-black" />
+                  </button>
+                  <button
+                    className="p-2 rounded-lg hover:bg-gray-100 transition"
+                    onClick={() => handleDelete(selectedCategory._id, product._id)}
+                  >
+                    <MdDelete size={22} className="text-gray-600 hover:text-black" />
+                  </button>
+                </div>
 
-  {/* Availability */}
-  <div className="mt-4 border-t pt-3 flex flex-col gap-2">
-    <p
-      className={`text-sm font-medium ${
-        product.product_availability ? "text-green-500" : "text-red-500"
-      }`}
-    >
-      Availability: {product.product_availability ? "Yes" : "No"}
-    </p>
+                {/* Availability */}
+                <div className="mt-4 border-t pt-3 flex flex-col gap-2">
+                  <p
+                    className={`text-sm font-medium ${product.product_availability ? "text-green-500" : "text-red-500"
+                      }`}
+                  >
+                    Availability: {product.product_availability ? "Yes" : "No"}
+                  </p>
 
-    <div className="flex items-center gap-5">
-      <label className="flex items-center gap-2 cursor-pointer text-yellow-600 text-sm">
-        <input
-          type="radio"
-          name={`availability-${product._id}`}
-          checked={product.product_availability === true}
-          onChange={() => handleAvailability(product._id)}
-          className="accent-yellow-500 cursor-pointer"
-        />
-        Mark Available
-      </label>
+                  <div className="flex items-center gap-5">
+                    <label className="flex items-center gap-2 cursor-pointer text-yellow-600 text-sm">
+                      <input
+                        type="radio"
+                        name={`availability-${product._id}`}
+                        checked={product.product_availability === true}
+                        onChange={() => handleAvailability(product._id)}
+                        className="accent-yellow-500 cursor-pointer"
+                      />
+                      Mark Available
+                    </label>
 
-      <label className="flex items-center gap-2 cursor-pointer text-yellow-600 text-sm">
-        <input
-          type="radio"
-          name={`availability-${product._id}`}
-          checked={product.product_availability === false}
-          onChange={() => handleUnAvailability(product._id)}
-          className="accent-yellow-500 cursor-pointer"
-        />
-        Mark Unavailable
-      </label>
-    </div>
-  </div>
-</div>
+                    <label className="flex items-center gap-2 cursor-pointer text-yellow-600 text-sm">
+                      <input
+                        type="radio"
+                        name={`availability-${product._id}`}
+                        checked={product.product_availability === false}
+                        onChange={() => handleUnAvailability(product._id)}
+                        className="accent-yellow-500 cursor-pointer"
+                      />
+                      Mark Unavailable
+                    </label>
+                  </div>
+                </div>
+              </div>
 
             ))}
           </div>

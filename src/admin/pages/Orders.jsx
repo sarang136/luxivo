@@ -149,7 +149,8 @@ const Orders = () => {
               <th className="px-4 py-4 border">Status</th>
               <th className="px-4 py-4 border">Product</th>
               <th className="px-4 py-4 border">Date</th>
-              <th className="px-4 py-4 border rounded-tr-xl">Action</th>
+              <th className="px-4 py-4 border">Action</th>
+              <th className="px-4 py-4 border rounded-tr-xl">Delivery Location</th>
             </tr>
           </thead>
           <tbody className="text-base">
@@ -201,6 +202,9 @@ const Orders = () => {
                   >
                     View
                   </button>
+                </td>
+                <td className="px-4 py-3 border">
+                 {order?.order?.Address?.homeOrFlat + ",  " + order?.order?.Address?.areaOrLocality}
                 </td>
               </tr>
             ))}
