@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, HashRouter } from 'react-router-dom'
 import AppRoutes from './admin/routes/AppRoutes'
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
@@ -7,10 +7,10 @@ import { ToastContainer } from 'react-toastify';
 const App = () => {
 
   return <>
-    <BrowserRouter>
+    <HashRouter>
       <AppRoutes />
       <ToastContainer/>
-    </BrowserRouter>
+    </HashRouter>
 
   </>
 }
