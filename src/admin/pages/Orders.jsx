@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Loader from "../components/Loader";
 import DatePicker from "react-datepicker";
@@ -13,9 +12,8 @@ const Orders = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const ordersPerPage = 10;
 
@@ -23,7 +21,7 @@ const Orders = () => {
     const getTransactions = async () => {
       try {
         const response = await axios.get(
-          'https://shirt-backend-11fx.onrender.com/api/payment/getTransaction'
+          `${import.meta.env.VITE_BACKEND_URL}/api/payment/getTransaction`
         );
 
         const txData = Array.isArray(response.data)
@@ -31,8 +29,18 @@ const Orders = () => {
           : Array.isArray(response.data?.data)
           ? response.data.data
           : [];
-        setTransactions(txData);
+
+        // 🔹 Flatten products — one entry per product
+        const flattened = txData.flatMap((order) =>
+          order.products?.map((product) => ({
+            ...order,
+            singleProduct: product,
+          })) || []
+        );
+
+        setTransactions(flattened);
       } catch (err) {
+        console.error(err);
         setTransactions([]);
       } finally {
         setLoading(false);
@@ -42,7 +50,7 @@ const Orders = () => {
     getTransactions();
   }, []);
 
-  // Filter and pagination logic
+  // 🔹 Filter by selected date
   let filteredOrders = transactions?.slice()?.reverse() || [];
 
   if (selectedDate) {
@@ -56,10 +64,13 @@ const Orders = () => {
   const totalPages = Math.ceil((filteredOrders?.length || 0) / ordersPerPage);
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = filteredOrders.slice(
+    indexOfFirstOrder,
+    indexOfLastOrder
+  );
 
-  const handleViewClick = (order) => {
-    setSelectedOrder(order);
+  const handleViewClick = (product) => {
+    setSelectedProduct(product);
     setIsModalOpen(true);
   };
 
@@ -150,13 +161,15 @@ const Orders = () => {
               <th className="px-4 py-4 border">Product</th>
               <th className="px-4 py-4 border">Date</th>
               <th className="px-4 py-4 border">Action</th>
-              <th className="px-4 py-4 border rounded-tr-xl">Delivery Location</th>
+              <th className="px-4 py-4 border rounded-tr-xl">
+                Delivery Location
+              </th>
             </tr>
           </thead>
           <tbody className="text-base">
             {currentOrders.map((order, index) => (
               <tr
-                key={order?._id || index}
+                key={order?._id + index}
                 className="hover:bg-gray-100 transition"
               >
                 <td className="px-4 py-3 border">
@@ -172,22 +185,16 @@ const Orders = () => {
                   {order?.state || "Pending"}
                 </td>
                 <td className="px-4 py-3 border space-y-2">
-                  {order?.products?.length > 0 ? (
-                    order.products.map((product, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        {product?.productData?.product_images?.[0] ? (
-                          <img
-                            src={product.productData.product_images[0]}
-                            alt={product.productData.product_name || "Product"}
-                            className="w-10 h-10 rounded border"
-                          />
-                        ) : (
-                          <span className="text-gray-400 italic">No Image</span>
-                        )}
-                      </div>
-                    ))
+                  {order?.singleProduct?.productData?.product_images?.[0] ? (
+                    <img
+                      src={order.singleProduct.productData.product_images[0]}
+                      alt={
+                        order.singleProduct.productData.product_name || "Product"
+                      }
+                      className="w-10 h-10 rounded border"
+                    />
                   ) : (
-                    <span className="text-gray-400 italic">No Products</span>
+                    <span className="text-gray-400 italic">No Image</span>
                   )}
                 </td>
                 <td className="px-4 py-3 border">
@@ -204,7 +211,9 @@ const Orders = () => {
                   </button>
                 </td>
                 <td className="px-4 py-3 border">
-                 {order?.order?.Address?.homeOrFlat + ",  " + order?.order?.Address?.areaOrLocality}
+                  {order?.order?.Address?.homeOrFlat +
+                    ", " +
+                    order?.order?.Address?.areaOrLocality || "N/A"}
                 </td>
               </tr>
             ))}
@@ -252,54 +261,51 @@ const Orders = () => {
         </button>
       </div>
 
-      {/* 🔹 Modal */}
-      {isModalOpen && selectedOrder && (
+      {/* 🔹 Modal (Single Product Details) */}
+      {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] max-h-[80vh] flex flex-col">
-            <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] flex flex-col">
+            <h2 className="text-xl font-semibold mb-4">Product Details</h2>
 
-            {/* 🔹 Total Items */}
-            <div className="flex justify-between items-center border-b pb-2 mb-4">
-              <span className="font-medium">Total Items</span>
-              <span>{selectedOrder?.products?.length || 0}</span>
-            </div>
-
-            {/* 🔹 All Products - Scrollable */}
-            <div className="flex-1 overflow-y-auto pr-1" style={{ maxHeight: "45vh" }}>
-              {selectedOrder?.products?.length > 0 ? (
-                selectedOrder.products.map((product, idx) => (
-                  <div key={idx} className="flex items-start gap-4 mb-4">
-                    {product?.productData?.product_images?.[0] ? (
-                      <img
-                        src={product.productData.product_images[0]}
-                        alt={product.productData.product_name || "Product"}
-                        className="w-20 h-20 object-cover rounded border"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded border text-gray-400 italic">
-                        No Image
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <h3 className="font-medium text-base break-words">
-                        {product?.productData?.product_name || "Unnamed"}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Size: {product?.Size || "N/A"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Qty: {product?.quantity || 0}
-                      </p>
-                      <p className="text-sm font-semibold mt-1">
-                        Rs.{product?.productData?.product_price || 0}
-                      </p>
-                    </div>
+            {selectedProduct?.singleProduct ? (
+              <div className="flex items-start gap-4">
+                {selectedProduct.singleProduct?.productData?.product_images?.[0] ? (
+                  <img
+                    src={
+                      selectedProduct.singleProduct.productData.product_images[0]
+                    }
+                    alt={
+                      selectedProduct.singleProduct.productData.product_name ||
+                      "Product"
+                    }
+                    className="w-20 h-20 object-cover rounded border"
+                  />
+                ) : (
+                  <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded border text-gray-400 italic">
+                    No Image
                   </div>
-                ))
-              ) : (
-                <div className="text-gray-400 italic">No Products</div>
-              )}
-            </div>
+                )}
+                <div>
+                  <h3 className="font-medium text-base">
+                    {selectedProduct.singleProduct?.productData?.product_name ||
+                      "Unnamed"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Size: {selectedProduct.singleProduct?.Size || "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Qty: {selectedProduct.singleProduct?.quantity || 0}
+                  </p>
+                  <p className="text-sm font-semibold mt-1">
+                    Rs.
+                    {selectedProduct.singleProduct?.productData?.product_price ||
+                      0}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-gray-400 italic">No product details</div>
+            )}
 
             {/* Close Button */}
             <div className="flex justify-end mt-6">
