@@ -1,49 +1,61 @@
-
-import React, { useEffect, useState } from 'react';
-import { useGetProductsQuery, useUpdateProductMutation, useDeleteProductMutation } from '../redux/productsApi';
-import { useNavigate } from 'react-router-dom';
-import Loader from '../components/Loader';
-import { MdDelete, MdEdit } from 'react-icons/md';
-import { toast } from 'react-toastify';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { MdEdit, MdDelete } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import Loader from "../components/Loader";
+import {
+  useGetProductsQuery,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useHandleAvailabilityMutation,
+} from "../redux/productsApi";
 
 const Categories = () => {
-  const { data, isLoading, refetch } = useGetProductsQuery();
+  const { data, isLoading } = useGetProductsQuery();
   const [updateProduct, { isLoading: loadingForEdit }] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
-  const [loading, setLoading] = useState(false);
-  const [available, setAvailable] = useState(null);
-
+  const [handleAvailability] = useHandleAvailabilityMutation();
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-
   const allCategories = data?.data || [];
 
+  // ✅ Load last selected category from localStorage
   useEffect(() => {
-    if (allCategories.length && !selectedCategory) {
-      setSelectedCategory(allCategories[0]);
+    const savedCategory = localStorage.getItem("selectedCategory");
+    if (allCategories.length) {
+      const found = allCategories.find((cat) => cat._id === savedCategory);
+      setSelectedCategory(found || allCategories[0]);
     }
-  }, [allCategories, selectedCategory]);
+  }, [allCategories]);
+
+  // ✅ Save selected category to localStorage
+  useEffect(() => {
+    if (selectedCategory) {
+      localStorage.setItem("selectedCategory", selectedCategory._id);
+    }
+  }, [selectedCategory]);
 
   const selectedProducts = selectedCategory?.product_array || [];
 
+  // ✅ Delete Product
   const handleDelete = async (categoryId, productId) => {
     let a = confirm("Do you want to delete this product?");
     if (a) {
       try {
         await deleteProduct({ categoryId, productId }).unwrap();
         toast.success("Product Deleted Successfully!");
-        refetch();
       } catch (error) {
-        console.error('Failed to delete product:', error);
+        console.error("Failed to delete product:", error);
       }
     }
   };
 
+  // ✅ Edit Product
   const handleEditClick = (product) => {
     setEditData({
       ...product,
@@ -61,30 +73,30 @@ const Categories = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditData(prev => ({ ...prev, [name]: value }));
+    setEditData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditSubmit = async () => {
     if (!editData) return;
 
-    const updatedArray = editData.fullCategory.product_array.map(p =>
+    const updatedArray = editData.fullCategory.product_array.map((p) =>
       p._id === editData._id
         ? {
-          ...p,
-          product_name: editData.product_name,
-          product_price: Number(editData.product_price),
-          product_type: editData.product_type,
-          product_images: (editData.product_images || []).map(img => img.preview),
-          product_description: editData.product_description,
-          product_fabric: editData.product_fabric || '',
-        }
+            ...p,
+            product_name: editData.product_name,
+            product_price: Number(editData.product_price),
+            product_type: editData.product_type,
+            product_images: (editData.product_images || []).map((img) => img.preview),
+            product_description: editData.product_description,
+            product_fabric: editData.product_fabric || "",
+          }
         : p
     );
 
     const formData = new FormData();
-    formData.append('product_catagory', editData.category);
-    formData.append('gender', editData.gender);
-    formData.append('product_array', JSON.stringify(updatedArray));
+    formData.append("product_catagory", editData.category);
+    formData.append("gender", editData.gender);
+    formData.append("product_array", JSON.stringify(updatedArray));
 
     try {
       await updateProduct({
@@ -94,16 +106,33 @@ const Categories = () => {
       toast.success("Edited Successfully!");
       setEditModalOpen(false);
       setEditData(null);
-      refetch();
     } catch (err) {
-      console.error('Update failed:', err);
+      console.error("Update failed:", err);
+    }
+  };
+
+  // ✅ Update Availability (Auto refresh via invalidatesTags)
+  const updateAvailability = async (productId, value) => {
+    try {
+      setLoading(true);
+      await handleAvailability({
+        productId,
+        body: { available: value },
+      }).unwrap();
+      toast.success(`Product marked as ${value ? "Available" : "Unavailable"}`);
+    } catch (error) {
+      console.error("Error updating availability:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl font-medium"><Loader /></div>
+        <div className="text-xl font-medium">
+          <Loader />
+        </div>
       </div>
     );
   }
@@ -112,51 +141,15 @@ const Categories = () => {
     return <div className="text-center mt-10 text-gray-600 text-xl">No Categories Found</div>;
   }
 
-  const handleAvailability = async (productId) => {
-    try {
-      setLoading(true);
-      console.log("Making available...");
-      const res = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`,
-        { available: true },
-        { withCredentials: true }
-      );
-      setAvailable(true);
-      console.log("Response:", res.data);
-     await refetch();
-    } catch (error) {
-      console.error("Error updating availability:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUnAvailability = async (productId) => {
-    try {
-      setLoading(true);
-      console.log("Making unavailable...");
-      const res = await axios.put(
-        `${import.meta.env.VITE_BACKEND_URL}/api/admin/v1/update/avalibilty/product/${productId}`,
-        { available: false },
-        { withCredentials: true }
-      );
-      setAvailable(false);
-      console.log("Response:", res.data);
-      await refetch();
-    } catch (error) {
-      console.error("Error updating availability:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="flex h-full">
-      {loading && ( 
+      {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
+
+      {/* Left Sidebar — Categories */}
       <div className="w-1/4 border-r border-gray-200 p-4 overflow-y-auto max-h-[80vh]">
         <h2 className="font-bold text-lg mb-3">Categories</h2>
         <div className="flex flex-col gap-2">
@@ -164,8 +157,11 @@ const Categories = () => {
             <div
               key={cat._id}
               onClick={() => setSelectedCategory(cat)}
-              className={`cursor-pointer px-4 py-2 rounded-md transition 
-                ${selectedCategory?._id === cat._id ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+              className={`cursor-pointer px-4 py-2 rounded-md transition ${
+                selectedCategory?._id === cat._id
+                  ? "bg-black text-white"
+                  : "bg-gray-100 hover:bg-gray-200"
+              }`}
             >
               {cat.product_catagory}
             </div>
@@ -173,6 +169,7 @@ const Categories = () => {
         </div>
       </div>
 
+      {/* Right Side — Products */}
       <div className="flex-1 p-4 overflow-auto max-h-[90vh]">
         {selectedProducts.length ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -181,24 +178,27 @@ const Categories = () => {
                 key={product._id + index}
                 className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between p-5"
               >
-                {/* Product Image */}
                 <img
                   src={product.product_images[0]}
                   alt={product.product_name}
                   className="w-full h-44 object-cover rounded-lg mb-4"
                 />
 
-                {/* Product Info */}
                 <div className="flex flex-col gap-1">
                   <h3 className="font-semibold text-base text-gray-800 truncate">
                     {product.product_name}
                   </h3>
-                  <p className="text-sm text-gray-500">{selectedCategory.product_catagory}</p>
-                  <p className="text-lg font-bold text-blue-600">₹{product.product_price}</p>
-                  <p className="text-sm text-gray-600">Fabric: {product.product_fabric}</p>
+                  <p className="text-sm text-gray-500">
+                    {selectedCategory.product_catagory}
+                  </p>
+                  <p className="text-lg font-bold text-blue-600">
+                    ₹{product.product_price}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Fabric: {product.product_fabric}
+                  </p>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex items-center gap-2 mt-4">
                   <button
                     className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
@@ -222,11 +222,11 @@ const Categories = () => {
                   </button>
                 </div>
 
-                {/* Availability */}
                 <div className="mt-4 border-t pt-3 flex flex-col gap-2">
                   <p
-                    className={`text-sm font-medium ${product.product_availability ? "text-green-500" : "text-red-500"
-                      }`}
+                    className={`text-sm font-medium ${
+                      product.product_availability ? "text-green-500" : "text-red-500"
+                    }`}
                   >
                     Availability: {product.product_availability ? "Yes" : "No"}
                   </p>
@@ -237,7 +237,8 @@ const Categories = () => {
                         type="radio"
                         name={`availability-${product._id}`}
                         checked={product.product_availability === true}
-                        onChange={() => handleAvailability(product._id)}
+                        onChange={() => updateAvailability(product._id, true)}
+                        disabled={loading}
                         className="accent-yellow-500 cursor-pointer"
                       />
                       Mark Available
@@ -248,7 +249,8 @@ const Categories = () => {
                         type="radio"
                         name={`availability-${product._id}`}
                         checked={product.product_availability === false}
-                        onChange={() => handleUnAvailability(product._id)}
+                        onChange={() => updateAvailability(product._id, false)}
+                        disabled={loading}
                         className="accent-yellow-500 cursor-pointer"
                       />
                       Mark Unavailable
@@ -256,7 +258,6 @@ const Categories = () => {
                   </div>
                 </div>
               </div>
-
             ))}
           </div>
         ) : (
@@ -264,6 +265,7 @@ const Categories = () => {
         )}
       </div>
 
+      {/* Edit Modal */}
       {editModalOpen && editData && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md max-h-[90vh] overflow-auto">
@@ -311,7 +313,7 @@ const Categories = () => {
             <input
               type="text"
               name="product_fabric"
-              value={editData.product_fabric || ''}
+              value={editData.product_fabric || ""}
               onChange={handleEditChange}
               className="w-full mb-4 p-2 border rounded"
             />
@@ -388,4 +390,3 @@ const Categories = () => {
 };
 
 export default Categories;
-
