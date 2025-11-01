@@ -27,8 +27,8 @@ const Orders = () => {
         const txData = Array.isArray(response.data)
           ? response.data
           : Array.isArray(response.data?.data)
-          ? response.data.data
-          : [];
+            ? response.data.data
+            : [];
 
         // 🔹 Flatten products — one entry per product
         const flattened = txData.flatMap((order) =>
@@ -70,9 +70,13 @@ const Orders = () => {
   );
 
   const handleViewClick = (product) => {
+    // console.log(product)
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
+
+  // console.log(selectedProduct)
+  // console.log(currentOrders)
 
   if (loading) {
     return (
@@ -226,11 +230,10 @@ const Orders = () => {
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((prev) => prev - 1)}
-          className={`px-3 py-1 rounded border ${
-            currentPage === 1
+          className={`px-3 py-1 rounded border ${currentPage === 1
               ? "text-gray-400 border-gray-300 cursor-not-allowed"
               : "text-blue-600 border-blue-400 hover:bg-blue-50"
-          }`}
+            }`}
         >
           Prev
         </button>
@@ -238,11 +241,10 @@ const Orders = () => {
           <button
             key={page}
             onClick={() => setCurrentPage(page)}
-            className={`px-3 py-1 rounded border ${
-              currentPage === page
+            className={`px-3 py-1 rounded border ${currentPage === page
                 ? "bg-blue-600 text-white border-blue-600"
                 : "text-blue-600 border-blue-400 hover:bg-blue-50"
-            }`}
+              }`}
           >
             {page}
           </button>
@@ -251,11 +253,10 @@ const Orders = () => {
         <button
           disabled={currentPage === totalPages}
           onClick={() => setCurrentPage((prev) => prev + 1)}
-          className={`px-3 py-1 rounded border ${
-            currentPage === totalPages
+          className={`px-3 py-1 rounded border ${currentPage === totalPages
               ? "text-gray-400 border-gray-300 cursor-not-allowed"
               : "text-blue-600 border-blue-400 hover:bg-blue-50"
-          }`}
+            }`}
         >
           Next
         </button>
@@ -291,7 +292,7 @@ const Orders = () => {
                       "Unnamed"}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Size: {selectedProduct.singleProduct?.Size || "N/A"}
+                    Size: {selectedProduct?.order?.products[0]?.Size || "N/A"}
                   </p>
                   <p className="text-sm text-gray-600">
                     Qty: {selectedProduct.singleProduct?.quantity || 0}

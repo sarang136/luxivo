@@ -17,7 +17,8 @@ import AddProduct from '../pages/AddProduct';
 import CategoryImages from '../pages/CategoryImages';
 import PrivateRoutes from '../../protected/PrivateRoutes';
 import Coupens from '../pages/Coupens';
-
+import Shirtbanner from '../pages/Shirtbanner';
+import SaleBanner from '../pages/SaleBanner';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -40,6 +41,8 @@ const AppRoutes = () => {
         <Route path="/orders/product-details" element={<OrderDetails/>} />
         <Route path="/category-images" element={<CategoryImages/>} />
         <Route path="/get-coupens" element={<Coupens/>} />
+        <Route path="/shirt-banners" element={<Shirtbanner/>} />
+        <Route path="/sell-banners" element={<SaleBanner/>} />
 
       </Route>
     </Routes>
