@@ -274,7 +274,7 @@ const Coupens = () => {
     }
   };
 
-  if (isLoading) return <div className="text-black p-6"><Loader/></div>;
+  if (isLoading) return <div className="text-black p-6"><Loader /></div>;
 
   return (
     <div className="min-h-screen text-white p-6">
@@ -301,12 +301,29 @@ const Coupens = () => {
             <p className="text-gray-400 text-sm mb-1">
               Code: <span className="text-white">{coupen.coupens_code}</span>
             </p>
-            <p>Discount: {coupen.coupens_discount}%</p>
+            <p>Discount : {coupen.coupens_discount}</p>
             <p>Min Purchase: ₹{coupen.coupens_minimum_purchase}</p>
-            <p className="text-sm text-gray-400 mt-1">
-              {coupen.coupens_start_date.slice(0, 10)} →{' '}
-              {coupen.coupens_end_date.slice(0, 10)}
+            {/* <p className="text-sm text-gray-400 mt-1">
+              {new Date(coupen.coupens_start_date).toLocaleDateString()}
+              {new Date(coupen.coupens_end_date).toLocaleDateString()}
+            </p> */}
+            <p className="text-sm text-gray-400 mt-1 flex font-bold items-center gap-2">
+              <span className="bg-green-200 text-green-700 px-4 py-2 rounded-full text-xs">
+                Start: {new Date(coupen.coupens_start_date).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+              <span className="bg-red-100 text-red-700 px-2 py-2 font-bold rounded-full text-xs">
+                Expires: {new Date(coupen.coupens_end_date).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
             </p>
+
 
             <div className="flex justify-end gap-4 mt-4">
               <button
@@ -338,7 +355,7 @@ const Coupens = () => {
             {[
               { label: 'Name', name: 'coupens_name' },
               { label: 'Code', name: 'coupens_code' },
-              { label: 'Discount %', name: 'coupens_discount', type: 'number' },
+              { label: 'Discount', name: 'coupens_discount', type: 'number' },
               {
                 label: 'Minimum Purchase',
                 name: 'coupens_minimum_purchase',
@@ -376,8 +393,8 @@ const Coupens = () => {
                     ? 'Updating...'
                     : 'Update'
                   : isAdding
-                  ? 'Adding...'
-                  : 'Add'}
+                    ? 'Adding...'
+                    : 'Add'}
               </button>
             </div>
           </div>
